@@ -13,6 +13,8 @@ MAX_BULLETS = 5
 BULLET_VEL = 7
 black = (0, 0, 0)
 LOST_FONT = pygame.font.SysFont('comicsans', 100)
+EXP_FONT = pygame.font.SysFont('comicsans', 30)
+level = 1
 
 background = pygame.transform.scale(pygame.image.load('fotos/background.png'), (1000, 1100))
 
@@ -52,9 +54,10 @@ pygame.transform.scale(pygame.image.load('fotos/CR9.png'), (CHARACTER_WIDTH, 145
 enemy_width, enemy_height = 170, 125
 walkcount_enemy = 0
 walkCount = 0
-VEL_enemy = 2
+VEL_enemy = 3
 health = 100
 health_enemy = 100
+exp = 0
 
 walkLeft = [
 pygame.transform.scale(pygame.image.load('fotos/Enemy/L1E.png'), (enemy_width, enemy_height)),
@@ -169,7 +172,7 @@ def draw(character, LEFT, RIGHT, JUMP, LEFT_JUMP, RIGHT_JUMP, start, bullets_lef
     pygame.display.update()
 
 def handle_bullets(bullets_left, bullets_right, enemies, enemy):
-    global health_enemy
+    global health_enemy, exp
     for bullet in bullets_left:
         if not(bullet.colliderect(enemy)):
             bullet.x -= BULLET_VEL
@@ -183,6 +186,7 @@ def handle_bullets(bullets_left, bullets_right, enemies, enemy):
                 bullets_left.remove(bullet)
             elif health_enemy == 0 and len(enemies) > 0:
                 enemies.remove(enemy)
+                exp += 25
             else:
                 bullets_left.remove(bullet)
 
@@ -199,6 +203,7 @@ def handle_bullets(bullets_left, bullets_right, enemies, enemy):
                 bullets_right.remove(bullet)
             elif health_enemy == 0 and len(enemies) > 0:
                 enemies.remove(enemy)
+                exp += 25
             else:
                 bullets_right.remove(bullet)
 
@@ -209,7 +214,7 @@ def lose():
     pygame.time.delay(3000)
 
 def rocket_fire(rockets, enemy, enemies):
-    global health_enemy
+    global health_enemy, exp
     for rocket in rockets:
         if not (rocket.colliderect(enemy)) and enemy.y - rocket.y <= 10:
             rocket.y -= 10
@@ -227,7 +232,22 @@ def rocket_fire(rockets, enemy, enemies):
             health_enemy -= 100
             rockets.remove(rocket)
             enemies.remove(enemy)
+            exp += 25
         pygame.display.update()
+
+def exp_bar():
+    global exp, level
+    experience = pygame.Rect(WIDTH/2 - 200 + 2, 22, exp, 26)
+    experience_bar = pygame.Rect(WIDTH/2 - 200, 20, 400, 30)
+    level_text = EXP_FONT.render(str(level), 1, black)
+    if exp != 400:
+        pygame.draw.rect(WIN, '#808080', experience_bar)
+        pygame.draw.rect(WIN, '#17E01000', experience)
+    else:
+        exp = 0
+        level += 1
+    WIN.blit(level_text, (WIDTH/2 - 220, 13))    
+    pygame.display.update()
 
 def main():
     clock = pygame.time.Clock()
@@ -342,6 +362,7 @@ def main():
         handle_bullets(bullets_left,bullets_right, enemies, enemy)
         draw(character, LEFT, RIGHT, JUMP, LEFT_JUMP, RIGHT_JUMP, start, bullets_left, bullets_right, floor1, floor3, floor, floor2, floor4, floor5,
          healthbar,healthbar_health, healthbar_enemy, healthbar_health_enemy, enemies, enemy)
+        exp_bar()
         rocket_fire(rockets, enemy, enemies)
 
         LEFT = False
