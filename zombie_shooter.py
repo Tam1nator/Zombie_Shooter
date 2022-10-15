@@ -16,6 +16,8 @@ LOST_FONT = pygame.font.SysFont('comicsans', 100)
 EXP_FONT = pygame.font.SysFont('comicsans', 30)
 level = 1
 
+heal_image = pygame.transform.scale(pygame.image.load('fotos/heal.png'),(50, 50))
+
 background = pygame.transform.scale(pygame.image.load('fotos/background.png'), (1000, 1100))
 
 laserbeam = pygame.transform.scale(pygame.image.load('fotos/laserbeam.png'), (20, 7))
@@ -85,7 +87,7 @@ pygame.transform.scale(pygame.image.load('fotos/Enemy/R9E.png'), (enemy_width, e
 
 
 def draw(character, LEFT, RIGHT, JUMP, LEFT_JUMP, RIGHT_JUMP, start, bullets_left, bullets_right, floor1, floor3, floor, floor2, floor4, floor5, healthbar,
- healthbar_health, healthbar_enemy, healthbar_health_enemy, enemies,enemy):
+ healthbar_health, healthbar_enemy, healthbar_health_enemy, enemies,enemy, player_heal, rockets):
     WIN.blit(background, (0, 0))
 
     WIN.blit(grass_floor, (floor.x, floor.y))
@@ -168,6 +170,16 @@ def draw(character, LEFT, RIGHT, JUMP, LEFT_JUMP, RIGHT_JUMP, start, bullets_lef
         WIN.blit(laserbeam, (bullet.x, bullet.y))
     for bullet in bullets_right:
         WIN.blit(laserbeam, (bullet.x, bullet.y))
+
+    for heal_player in player_heal:
+        if not(character.colliderect(heal_player)):
+            WIN.blit(heal_image, (heal_player.x, heal_player.y))
+        elif health < 100 and character.colliderect(heal_player):
+            health = 100
+            player_heal.remove(heal_player)
+
+    exp_bar()
+    rocket_fire(rockets, enemy, enemies)
 
     pygame.display.update()
 
@@ -281,6 +293,12 @@ def main():
     rockets = []
     rocket = pygame.Rect(character.x + CHARACTER_WIDTH/2, character.y - CHARACTER_HEIGHT, 35, 100)
 
+    player_heal = []
+
+    heal_player = pygame.Rect(WIDTH/2 - 25, 500, 50, 50)
+    player_heal.append(heal_player)
+    heal_counter = 0
+
     while run:
         clock.tick(27) 
 
@@ -289,7 +307,11 @@ def main():
             global health_enemy
             health_enemy = 100
             enemies.append(enemy)
-
+        if len(player_heal) == 0:
+            if heal_counter == 27 * 5:
+                player_heal.append(heal_player)
+            else:
+                heal_counter += 1
         healthbar = pygame.Rect(character.x, character.y - 30, 104, 15)
         healthbar_health = pygame.Rect(character.x + 2, character.y - 28, health, 11)
         healthbar_enemy = pygame.Rect(enemy.x + 10, enemy.y - 30, 104, 15)
@@ -361,9 +383,7 @@ def main():
 
         handle_bullets(bullets_left,bullets_right, enemies, enemy)
         draw(character, LEFT, RIGHT, JUMP, LEFT_JUMP, RIGHT_JUMP, start, bullets_left, bullets_right, floor1, floor3, floor, floor2, floor4, floor5,
-         healthbar,healthbar_health, healthbar_enemy, healthbar_health_enemy, enemies, enemy)
-        exp_bar()
-        rocket_fire(rockets, enemy, enemies)
+         healthbar,healthbar_health, healthbar_enemy, healthbar_health_enemy, enemies, enemy, player_heal, rockets)
 
         LEFT = False
         RIGHT = False
